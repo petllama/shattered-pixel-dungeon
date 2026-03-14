@@ -69,6 +69,7 @@ public class Item implements Bundlable {
 	
 	public static final String AC_DROP		= "DROP";
 	public static final String AC_THROW		= "THROW";
+	public static final String AC_IDENTIFY	= "IDENTIFY";
 	
 	protected String defaultAction;
 	public boolean usesTargeting;
@@ -111,6 +112,9 @@ public class Item implements Bundlable {
 		ArrayList<String> actions = new ArrayList<>();
 		actions.add( AC_DROP );
 		actions.add( AC_THROW );
+		if (hero != null && hero.belongings.contains(this) && !isIdentified()) {
+			actions.add( AC_IDENTIFY );
+		}
 		return actions;
 	}
 
@@ -170,6 +174,13 @@ public class Item implements Bundlable {
 			
 			if (hero.belongings.backpack.contains(this) || isEquipped(hero)) {
 				doThrow(hero);
+			}
+			
+		} else if (action.equals( AC_IDENTIFY )) {
+			
+			if (hero.belongings.contains(this)) {
+				identify();
+				Badges.validateItemLevelAquired(this);
 			}
 			
 		}
