@@ -757,7 +757,9 @@ public class GameScene extends PixelScene {
 				}
 			}
 			if (ankh != null && GamesInProgress.gameExists(GamesInProgress.curSlot)) {
-				add(new WndResurrect(ankh));
+				add(new WndResurrect(ankh, Dungeon.pendingDeathCause()));
+			} else if (GamesInProgress.checkpointExists(GamesInProgress.curSlot)) {
+				add(new WndResurrect(Dungeon.pendingDeathCause()));
 			} else {
 				gameOver();
 			}

@@ -2163,35 +2163,57 @@ public class Hero extends Char {
 					}
 				}
 			} else {
-
-				//this is hacky, basically we want to declare that a wndResurrect exists before
-				//it actually gets created. This is important so that the game knows to not
-				//delete the run or submit it to rankings, because a WndResurrect is about to exist
-				//this is needed because the actual creation of the window is delayed here
-				WndResurrect.instance = new Object();
-				Ankh finalAnkh = ankh;
-				Game.runOnRenderThread(new Callback() {
-					@Override
-					public void call() {
-						GameScene.show( new WndResurrect(finalAnkh) );
-					}
-				});
-
-				if (cause instanceof Hero.Doom) {
-					((Hero.Doom)cause).onDeath();
-				}
-
-				SacrificialFire.Marked sacMark = buff(SacrificialFire.Marked.class);
-				if (sacMark != null){
-					sacMark.detach();
-				}
-
+				Dungeon.setPendingDeathCause(cause);
+				showPostDeathWindow(ankh, cause);
+				clearSacrificialMark();
 			}
 			return;
 		}
-		
+
+		if (GamesInProgress.checkpointExists(GamesInProgress.curSlot)) {
+			interrupt();
+			Dungeon.setPendingDeathCause(cause);
+			showPostDeathWindow(null, cause);
+			clearSacrificialMark();
+			return;
+		}
+
+		completeDeath( cause );
+	}
+
+	private void showPostDeathWindow( final Ankh ankh, final Object cause ) {
+		//this is hacky, basically we want to declare that a wndResurrect exists before
+		//it actually gets created. This is important so that the game knows to not
+		//delete the run or submit it to rankings, because a WndResurrect is about to exist
+		//this is needed because the actual creation of the window is delayed here
+		WndResurrect.instance = new Object();
+		Game.runOnRenderThread(new Callback() {
+			@Override
+			public void call() {
+				if (ankh != null) {
+					GameScene.show( new WndResurrect(ankh, cause) );
+				} else {
+					GameScene.show( new WndResurrect(cause) );
+				}
+			}
+		});
+	}
+
+	private void clearSacrificialMark() {
+		SacrificialFire.Marked sacMark = buff(SacrificialFire.Marked.class);
+		if (sacMark != null){
+			sacMark.detach();
+		}
+	}
+
+	public void completeDeath( Object cause ) {
+		Dungeon.clearPendingDeathCause();
+		WndResurrect.instance = null;
 		Actor.fixTime();
 		super.die( cause );
+		if (!(cause instanceof Hero.Doom)) {
+			Dungeon.fail( cause );
+		}
 		reallyDie( cause );
 	}
 	

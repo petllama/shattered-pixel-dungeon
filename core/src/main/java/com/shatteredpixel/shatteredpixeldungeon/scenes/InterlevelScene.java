@@ -87,6 +87,7 @@ public class InterlevelScene extends PixelScene {
 	public static int returnDepth;
 	public static int returnBranch;
 	public static int returnPos;
+	public static boolean resurrectFromCheckpoint;
 
 	public static boolean fallIntoPit;
 	
@@ -646,6 +647,7 @@ public class InterlevelScene extends PixelScene {
 
 			Level level = Dungeon.newLevel();
 			Dungeon.switchLevel( level, -1 );
+			Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 		} else {
 			if (curTransition.destBranch != Dungeon.branch && Dungeon.depth >= 16 && Dungeon.depth <= 20) {
 				//FIXME avoids holding allies when entering city quest area, this is very sloppy though
@@ -668,6 +670,7 @@ public class InterlevelScene extends PixelScene {
 			LevelTransition destTransition = level.getTransition(curTransition.destType);
 			curTransition = null;
 			Dungeon.switchLevel( level, destTransition.cell() );
+			Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 		}
 
 	}
@@ -688,6 +691,7 @@ public class InterlevelScene extends PixelScene {
 			level = Dungeon.newLevel();
 		}
 		Dungeon.switchLevel( level, level.fallCell( fallIntoPit ));
+		Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 	}
 
 	private void ascend() throws IOException {
@@ -712,6 +716,7 @@ public class InterlevelScene extends PixelScene {
 		LevelTransition destTransition = level.getTransition(curTransition.destType);
 		curTransition = null;
 		Dungeon.switchLevel( level, destTransition.cell() );
+		Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 	}
 	
 	private void returnTo() throws IOException {
@@ -728,6 +733,7 @@ public class InterlevelScene extends PixelScene {
 		}
 
 		Dungeon.switchLevel( level, returnPos );
+		Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 	}
 	
 	private void restore() throws IOException {
@@ -746,7 +752,18 @@ public class InterlevelScene extends PixelScene {
 		}
 	}
 	
-	private void resurrect() {
+	private void resurrect() throws IOException {
+		if (resurrectFromCheckpoint) {
+			resurrectFromCheckpoint = false;
+
+			Mob.clearHeldAllies();
+			GameLog.wipe();
+
+			Dungeon.loadCheckpoint( GamesInProgress.curSlot );
+			Level level = Dungeon.loadCheckpointLevel( GamesInProgress.curSlot );
+			Dungeon.switchLevel( level, Dungeon.hero.pos );
+			return;
+		}
 		
 		Mob.holdAllies( Dungeon.level );
 
@@ -810,6 +827,7 @@ public class InterlevelScene extends PixelScene {
 
 		Level level = Dungeon.newLevel();
 		Dungeon.switchLevel( level, level.entrance() );
+		Dungeon.saveCheckpoint( GamesInProgress.curSlot );
 	}
 	
 	@Override

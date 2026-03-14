@@ -212,6 +212,7 @@ public class Dungeon {
 	public static String customSeedText = "";
 	public static long seed;
 	public static long lastPlayed;
+	private static String pendingDeathCauseClass;
 
 	//we initialize the seed separately so that things like interlevelscene can access it early
 	public static void initSeed(){
@@ -272,6 +273,7 @@ public class Dungeon {
 		LimitedDrops.reset();
 		
 		chapters = new HashSet<>();
+		pendingDeathCauseClass = null;
 		
 		Ghost.Quest.reset();
 		Wandmaker.Quest.reset();
@@ -605,6 +607,7 @@ public class Dungeon {
 	private static final String DAILY	    = "daily";
 	private static final String DAILY_REPLAY= "daily_replay";
 	private static final String LAST_PLAYED = "last_played";
+	private static final String PENDING_DEATH_CAUSE = "pending_death_cause";
 	private static final String CHALLENGES	= "challenges";
 	private static final String MOBS_TO_CHAMPION	= "mobs_to_champion";
 	private static final String HERO		= "hero";
@@ -632,6 +635,9 @@ public class Dungeon {
 			bundle.put( DAILY, daily );
 			bundle.put( DAILY_REPLAY, dailyReplay );
 			bundle.put( LAST_PLAYED, lastPlayed = Game.realTime);
+			if (pendingDeathCauseClass != null) {
+				bundle.put(PENDING_DEATH_CAUSE, pendingDeathCauseClass);
+			}
 			bundle.put( CHALLENGES, challenges );
 			bundle.put( MOBS_TO_CHAMPION, mobsToChampion );
 			bundle.put( HERO, hero );
@@ -721,8 +727,12 @@ public class Dungeon {
 	}
 	
 	public static void loadGame( int save, boolean fullLoad ) throws IOException {
+		loadGameFromFile( GamesInProgress.gameFile( save ), fullLoad );
+	}
+
+	private static void loadGameFromFile( String fileName, boolean fullLoad ) throws IOException {
 		
-		Bundle bundle = FileUtils.bundleFromFile( GamesInProgress.gameFile( save ) );
+		Bundle bundle = FileUtils.bundleFromFile( fileName );
 
 		initialVersion = bundle.getInt( INIT_VER );
 		version = bundle.getInt( VERSION );
@@ -731,6 +741,7 @@ public class Dungeon {
 		customSeedText = bundle.getString( CUSTOM_SEED );
 		daily = bundle.getBoolean( DAILY );
 		dailyReplay = bundle.getBoolean( DAILY_REPLAY );
+		pendingDeathCauseClass = bundle.contains(PENDING_DEATH_CAUSE) ? bundle.getString(PENDING_DEATH_CAUSE) : null;
 
 		Actor.clear();
 		Actor.restoreNextID( bundle );
@@ -824,11 +835,15 @@ public class Dungeon {
 	}
 	
 	public static Level loadLevel( int save ) throws IOException {
+		return loadLevelFromFile( GamesInProgress.depthFile( save, depth, branch ) );
+	}
+
+	private static Level loadLevelFromFile( String fileName ) throws IOException {
 		
 		Dungeon.level = null;
 		Actor.clear();
 
-		Bundle bundle = FileUtils.bundleFromFile( GamesInProgress.depthFile( save, depth, branch ));
+		Bundle bundle = FileUtils.bundleFromFile( fileName );
 
 		Level level = (Level)bundle.get( LEVEL );
 
@@ -836,6 +851,56 @@ public class Dungeon {
 			throw new IOException();
 		} else {
 			return level;
+		}
+	}
+
+	public static void saveCheckpoint( int save ) throws IOException {
+		Bundle gameBundle = FileUtils.bundleFromFile( GamesInProgress.gameFile(save) );
+		FileUtils.bundleToFile( GamesInProgress.checkpointGameFile(save), gameBundle );
+
+		Bundle levelBundle = FileUtils.bundleFromFile( GamesInProgress.depthFile(save, depth, branch) );
+		FileUtils.bundleToFile( GamesInProgress.checkpointLevelFile(save), levelBundle );
+	}
+
+	public static void loadCheckpoint( int save ) throws IOException {
+		loadGameFromFile( GamesInProgress.checkpointGameFile(save), true );
+	}
+
+	public static Level loadCheckpointLevel( int save ) throws IOException {
+		return loadLevelFromFile( GamesInProgress.checkpointLevelFile(save) );
+	}
+
+	public static void setPendingDeathCause( Object cause ) {
+		if (cause == null) {
+			pendingDeathCauseClass = null;
+		} else if (cause instanceof Class) {
+			pendingDeathCauseClass = ((Class<?>) cause).getName();
+		} else {
+			pendingDeathCauseClass = cause.getClass().getName();
+		}
+	}
+
+	public static void clearPendingDeathCause() {
+		pendingDeathCauseClass = null;
+	}
+
+	public static Object pendingDeathCause() {
+		if (pendingDeathCauseClass == null) {
+			return Hero.class;
+		}
+
+		try {
+			Class<?> causeClass = Class.forName(pendingDeathCauseClass);
+			if (Hero.Doom.class.isAssignableFrom(causeClass)) {
+				try {
+					return causeClass.getDeclaredConstructor().newInstance();
+				} catch (Exception ignored) {
+					return causeClass;
+				}
+			}
+			return causeClass;
+		} catch (Exception ignored) {
+			return Hero.class;
 		}
 	}
 	
@@ -849,6 +914,9 @@ public class Dungeon {
 				}
 			}
 		}
+
+		FileUtils.deleteFile(GamesInProgress.checkpointLevelFile(save));
+		FileUtils.deleteFile(GamesInProgress.checkpointGameFile(save));
 
 		FileUtils.overwriteFile(GamesInProgress.gameFile(save), 1);
 		

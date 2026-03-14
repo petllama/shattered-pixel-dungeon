@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -56,7 +57,7 @@ public class WndResurrect extends Window {
 
 	RedButton btnContinue;
 	
-	public WndResurrect( final Ankh ankh ) {
+	public WndResurrect( final Ankh ankh, final Object cause ) {
 		
 		super();
 		
@@ -107,22 +108,78 @@ public class WndResurrect extends Window {
 						@Override
 						protected void onSelect(int index) {
 							if (index == 0){
-								resurrect(ankh);
+								resurrect(ankh, cause);
 							}
 						}
 					});
 				} else {
-					resurrect( ankh );
+					resurrect( ankh, cause );
 				}
 			}
 		};
 		btnContinue.setRect( 0, btnItem1.bottom() + BTN_GAP, WIDTH, BTN_HEIGHT );
 		add( btnContinue );
 
-		resize( WIDTH, (int)btnContinue.bottom() );
+		float bottom = btnContinue.bottom();
+		if (GamesInProgress.checkpointExists(GamesInProgress.curSlot)) {
+			RedButton btnCheckpoint = new RedButton( Messages.get(this, "restart_floor") ) {
+				@Override
+				protected void onClick() {
+					restartFloor();
+				}
+			};
+			btnCheckpoint.setRect( 0, bottom + GAP, WIDTH, BTN_HEIGHT );
+			add( btnCheckpoint );
+			bottom = btnCheckpoint.bottom();
+		}
+
+		resize( WIDTH, (int)bottom );
 	}
 
-	private void resurrect( final Ankh ankh ){
+	public WndResurrect( final Object cause ) {
+
+		super();
+
+		instance = this;
+
+		IconTitle titlebar = new IconTitle();
+		titlebar.icon( Icons.ENTER.get() );
+		titlebar.label( Messages.titleCase(Messages.get(this, "continue_title")) );
+		titlebar.setRect( 0, 0, WIDTH, 0 );
+		add( titlebar );
+
+		RenderedTextBlock message = PixelScene.renderTextBlock(Messages.get(this, "continue_message"), 6 );
+		message.maxWidth(WIDTH);
+		message.setPos(0, titlebar.bottom() + GAP);
+		add( message );
+
+		RedButton btnRestart = new RedButton( Messages.get(this, "restart_floor") ) {
+			@Override
+			protected void onClick() {
+				restartFloor();
+			}
+		};
+		btnRestart.setRect( 0, message.bottom() + BTN_GAP, WIDTH, BTN_HEIGHT );
+		add( btnRestart );
+
+		RedButton btnGiveUp = new RedButton( Messages.get(this, "give_up") ) {
+			@Override
+			protected void onClick() {
+				hide();
+				Dungeon.hero.completeDeath( cause );
+			}
+		};
+		btnGiveUp.setRect( 0, btnRestart.bottom() + GAP, WIDTH, BTN_HEIGHT );
+		add( btnGiveUp );
+
+		resize( WIDTH, (int)btnGiveUp.bottom() );
+	}
+
+	private void resurrect( final Ankh ankh, final Object cause ){
+		if (cause instanceof com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero.Doom) {
+			((com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero.Doom) cause).onDeath();
+		}
+		Dungeon.clearPendingDeathCause();
 		hide();
 
 		Statistics.ankhsUsed++;
@@ -137,6 +194,14 @@ public class WndResurrect extends Window {
 			btnItem2.item().keptThoughLostInvent = true;
 		}
 
+		InterlevelScene.mode = InterlevelScene.Mode.RESURRECT;
+		Game.switchScene( InterlevelScene.class );
+	}
+
+	private void restartFloor() {
+		hide();
+
+		InterlevelScene.resurrectFromCheckpoint = true;
 		InterlevelScene.mode = InterlevelScene.Mode.RESURRECT;
 		Game.switchScene( InterlevelScene.class );
 	}
