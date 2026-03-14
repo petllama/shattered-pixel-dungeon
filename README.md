@@ -2,6 +2,10 @@
 
 [Shattered Pixel Dungeon](https://shatteredpixel.com/shatteredpd/) is an open-source traditional roguelike dungeon crawler with randomized levels and enemies, and hundreds of items to collect and use. It's based on the [source code of Pixel Dungeon](https://github.com/00-Evan/pixel-dungeon-gradle), by [Watabou](https://watabou.itch.io/).
 
+This fork currently includes a couple of local gameplay changes that are not part of the official upstream releases linked below:
+- Inventory items can always be manually identified through a persistent `Identify` action with no resource cost and no turn cost.
+- If a floor-entry checkpoint exists, death can offer `Continue`, which restores the exact beginning state of the current floor and discards the failed attempt.
+
 Shattered Pixel Dungeon currently compiles for Android, iOS, and Desktop platforms. You can find official releases of the game on:
 
 [![Get it on Google Play](https://shatteredpixel.com/assets/images/badges/gplay.png)](https://play.google.com/store/apps/details?id=com.shatteredpixel.shatteredpixeldungeon)
