@@ -11,7 +11,7 @@ Shattered Pixel Dungeon currently compiles for Android, iOS, and Desktop platfor
 [![Itch.io](https://shatteredpixel.com/assets/images/badges/itch.png)](https://shattered-pixel.itch.io/shattered-pixel-dungeon)
 [![Github Releases](https://shatteredpixel.com/assets/images/badges/github.png)](https://github.com/00-Evan/shattered-pixel-dungeon/releases)
 
-If you like this game, please consider [supporting me on Patreon](https://www.patreon.com/ShatteredPixel)!
+If you like this game, please consider [supporting the creator on Patreon](https://www.patreon.com/ShatteredPixel)!
 
 There is an official blog for this project at [ShatteredPixel.com](https://www.shatteredpixel.com/blog/).
 
