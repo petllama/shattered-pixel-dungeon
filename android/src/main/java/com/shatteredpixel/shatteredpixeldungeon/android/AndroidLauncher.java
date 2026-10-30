@@ -91,10 +91,32 @@ public class AndroidLauncher extends AndroidApplication {
 			}
 
 			Gdx.app = this;
-			if (UpdateImpl.supportsUpdates()) {
+
+			//we want to try and ID if we were installed by a 3rd party appstore.
+			// If so we vary update and news checking a bit.
+			String installer;
+			try {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+					installer = getPackageManager().getInstallSourceInfo(getPackageName()).getInstallingPackageName();
+				} else {
+					installer = getPackageManager().getInstallerPackageName(getPackageName());
+				}
+				if (installer == null) installer = "???";
+			} catch (Exception e) {
+				installer = "???";
+			}
+
+			//if we were installed by a known 3rd party appstore that auto-updates, disable update checking
+			if (UpdateImpl.supportsUpdates()
+					&& !installer.contains("fdroid") && !installer.contains("com.looker.droidify") && !installer.contains("com.uptodown")) {
 				Updates.service = UpdateImpl.getUpdateService();
 			}
+
+			//F-Droid specifically considers auto news checking to be an 'anti-feature', so default it to false
 			if (NewsImpl.supportsNews()) {
+				if (installer.contains("fdroid") || installer.contains("com.looker.droidify")){
+					SPDSettings.newsDefault = false;
+				}
 				News.service = NewsImpl.getNewsService();
 			}
 
@@ -113,11 +135,18 @@ public class AndroidLauncher extends AndroidApplication {
 		//Shattered still overrides the back gesture behaviour, but we need to do it in a new way
 		// (API added in Android 13, functionality enforced in Android 16)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, new OnBackInvokedCallback() {
+			//we post this to a runnable so that it's delayed and overrides
+			// default GDX back handling, which only sends a key down event
+			runnables.add(new Runnable() {
 				@Override
-				public void onBackInvoked() {
-					KeyEvent.addKeyEvent(new KeyEvent(Input.Keys.BACK, true));
-					KeyEvent.addKeyEvent(new KeyEvent(Input.Keys.BACK, false));
+				public void run() {
+					getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, new OnBackInvokedCallback() {
+						@Override
+						public void onBackInvoked() {
+							KeyEvent.addKeyEvent(new KeyEvent(Input.Keys.BACK, true));
+							KeyEvent.addKeyEvent(new KeyEvent(Input.Keys.BACK, false));
+						}
+					});
 				}
 			});
 		}
@@ -156,6 +185,7 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onResume();
 	}
 
+	@SuppressLint("GestureBackNavigation")
 	@Override
 	public void onBackPressed() {
 		//do nothing, game should catch all back presses
