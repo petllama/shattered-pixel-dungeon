@@ -2,7 +2,7 @@
 
 [Shattered Pixel Dungeon](https://shatteredpixel.com/shatteredpd/) is an open-source traditional roguelike dungeon crawler with randomized levels and enemies, and hundreds of items to collect and use. It's based on the [source code of Pixel Dungeon](https://github.com/00-Evan/pixel-dungeon-gradle), by [Watabou](https://watabou.itch.io/).
 
-This fork ("SPD Practice") adds practice/learning features that are not part of the official upstream releases linked below. Every feature is a toggle in the **Practice** window (in-game menu, or the hero select screen's game options), and all default to on:
+This fork ("SPD Practice", based on Shattered PD v4.0.2) adds practice/learning features that are not part of the official upstream releases linked below. Every feature is a toggle in the **Practice** window (in-game menu, or the hero select screen's game options), and all default to on:
 - **Free identify**: inventory items can always be manually identified through a persistent `Identify` action with no resource cost and no turn cost.
 - **Floor retry**: on death, `Continue` restores the exact beginning state of the current floor and discards the failed attempt.
 - **Damage log**: the last 12 hits you took (turn, source, damage, HP left), from the game menu or the death window.
