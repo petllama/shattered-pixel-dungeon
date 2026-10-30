@@ -330,6 +330,7 @@ public enum HeroClass {
 	public boolean isUnlocked(){
 		//always unlock on debug builds
 		if (DeviceCompat.isDebug()) return true;
+		if (com.shatteredpixel.shatteredpixeldungeon.Practice.allHeroesEnabled()) return true;
 
 		switch (this){
 			case WARRIOR: default:

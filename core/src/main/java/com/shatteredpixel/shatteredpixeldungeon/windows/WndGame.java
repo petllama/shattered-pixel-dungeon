@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
+import com.shatteredpixel.shatteredpixeldungeon.Practice;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -95,6 +96,27 @@ public class WndGame extends Window {
 				}
 			} );
 			curBtn.icon(Icons.get(Icons.RANKINGS));
+		}
+
+		// Practice options & damage log
+		addButton( curBtn = new RedButton( Messages.get(WndPractice.class, "title") ) {
+			@Override
+			protected void onClick() {
+				hide();
+				GameScene.show( new WndPractice() );
+			}
+		} );
+		curBtn.icon(Icons.get(Icons.TALENT));
+		if (Practice.recapEnabled()) {
+			addButton( curBtn = new RedButton( Messages.get(WndPractice.class, "recap_button") ) {
+				@Override
+				protected void onClick() {
+					hide();
+					GameScene.show( new WndTitledMessage( Icons.get(Icons.SKULL),
+							Messages.get(WndPractice.class, "recap_title"), Practice.recapText() ) );
+				}
+			} );
+			curBtn.icon(Icons.get(Icons.SKULL));
 		}
 
 		// Main menu

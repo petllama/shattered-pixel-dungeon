@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
+import com.shatteredpixel.shatteredpixeldungeon.Practice;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -133,6 +134,8 @@ public class WndResurrect extends Window {
 			bottom = btnCheckpoint.bottom();
 		}
 
+		bottom = addRecapButton( bottom );
+
 		resize( WIDTH, (int)bottom );
 	}
 
@@ -172,7 +175,22 @@ public class WndResurrect extends Window {
 		btnGiveUp.setRect( 0, btnRestart.bottom() + GAP, WIDTH, BTN_HEIGHT );
 		add( btnGiveUp );
 
-		resize( WIDTH, (int)btnGiveUp.bottom() );
+		resize( WIDTH, (int)addRecapButton( btnGiveUp.bottom() ) );
+	}
+
+	private float addRecapButton( float bottom ){
+		if (!Practice.recapEnabled()) return bottom;
+		RedButton btnRecap = new RedButton( Messages.get(WndPractice.class, "recap_button") ) {
+			@Override
+			protected void onClick() {
+				GameScene.show( new WndTitledMessage( Icons.get(Icons.SKULL),
+						Messages.get(WndPractice.class, "recap_title"), Practice.recapText() ) );
+			}
+		};
+		btnRecap.icon( Icons.get(Icons.SKULL) );
+		btnRecap.setRect( 0, bottom + GAP, WIDTH, BTN_HEIGHT );
+		add( btnRecap );
+		return btnRecap.bottom();
 	}
 
 	private void resurrect( final Ankh ankh, final Object cause ){

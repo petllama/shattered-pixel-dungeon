@@ -81,7 +81,8 @@ public class GamesInProgress {
 	}
 
 	public static boolean checkpointExists( int slot ){
-		return FileUtils.fileLength(checkpointGameFile(slot)) > 1
+		return Practice.checkpointEnabled()
+				&& FileUtils.fileLength(checkpointGameFile(slot)) > 1
 				&& FileUtils.fileLength(checkpointLevelFile(slot)) > 1;
 	}
 	

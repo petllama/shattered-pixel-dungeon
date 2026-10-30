@@ -2,9 +2,15 @@
 
 [Shattered Pixel Dungeon](https://shatteredpixel.com/shatteredpd/) is an open-source traditional roguelike dungeon crawler with randomized levels and enemies, and hundreds of items to collect and use. It's based on the [source code of Pixel Dungeon](https://github.com/00-Evan/pixel-dungeon-gradle), by [Watabou](https://watabou.itch.io/).
 
-This fork currently includes a couple of local gameplay changes that are not part of the official upstream releases linked below:
-- Inventory items can always be manually identified through a persistent `Identify` action with no resource cost and no turn cost.
-- If a floor-entry checkpoint exists, death can offer `Continue`, which restores the exact beginning state of the current floor and discards the failed attempt.
+This fork ("SPD Practice") adds practice/learning features that are not part of the official upstream releases linked below. Every feature is a toggle in the **Practice** window (in-game menu, or the hero select screen's game options), and all default to on:
+- **Free identify**: inventory items can always be manually identified through a persistent `Identify` action with no resource cost and no turn cost.
+- **Floor retry**: on death, `Continue` restores the exact beginning state of the current floor and discards the failed attempt.
+- **Damage log**: the last 12 hits you took (turn, source, damage, HP left), from the game menu or the death window.
+- **Enemy stats**: enemy info windows show HP, damage/armor ranges, hit chances both ways and rough attacks-to-kill estimates (sampled on an isolated RNG, so it never changes the run).
+- **Seeds & challenges**: custom seeds, daily runs, challenges and full randomize without needing a win first.
+- **All heroes**: every hero class is playable without unlocking it.
+
+The Android build uses its own app id (`com.petllama.spdpractice`, "SPD Practice") so it installs alongside official Shattered PD, and it never prompts to update to upstream releases. Release builds are signed when `spdKeystore`, `spdKeystorePassword`, `spdKeyAlias` and `spdKeyPassword` are set in `~/.gradle/gradle.properties`.
 
 Shattered Pixel Dungeon currently compiles for Android, iOS, and Desktop platforms. You can find official releases of the game on:
 

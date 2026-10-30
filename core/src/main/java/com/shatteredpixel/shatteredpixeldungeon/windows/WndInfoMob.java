@@ -34,7 +34,9 @@ public class WndInfoMob extends WndTitledMessage {
 	
 	public WndInfoMob( Mob mob ) {
 
-		super( new MobTitle( mob ), mob.info() );
+		super( new MobTitle( mob ), mob.info()
+				+ (com.shatteredpixel.shatteredpixeldungeon.Practice.mobStatsEnabled()
+					? com.shatteredpixel.shatteredpixeldungeon.Practice.mobStats(mob) : "") );
 		
 	}
 	

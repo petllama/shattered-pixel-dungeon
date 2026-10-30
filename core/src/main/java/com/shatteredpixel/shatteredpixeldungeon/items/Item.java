@@ -112,7 +112,8 @@ public class Item implements Bundlable {
 		ArrayList<String> actions = new ArrayList<>();
 		actions.add( AC_DROP );
 		actions.add( AC_THROW );
-		if (hero != null && hero.belongings.contains(this) && !isIdentified()) {
+		if (com.shatteredpixel.shatteredpixeldungeon.Practice.identifyEnabled()
+				&& hero != null && hero.belongings.contains(this) && !isIdentified()) {
 			actions.add( AC_IDENTIFY );
 		}
 		return actions;

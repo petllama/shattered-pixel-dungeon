@@ -233,6 +233,7 @@ public class Dungeon {
 	
 	public static void init() {
 
+		Practice.clearRecap();
 		initialVersion = version = Game.versionCode;
 		challenges = SPDSettings.challenges();
 		mobsToChampion = 1;
@@ -731,6 +732,7 @@ public class Dungeon {
 	}
 
 	private static void loadGameFromFile( String fileName, boolean fullLoad ) throws IOException {
+		Practice.clearRecap();
 		
 		Bundle bundle = FileUtils.bundleFromFile( fileName );
 

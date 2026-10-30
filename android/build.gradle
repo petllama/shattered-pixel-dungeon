@@ -8,8 +8,9 @@ android {
     sourceSets.main.assets.srcDirs = [new File(project(':core').projectDir, "/src/main/assets")]
 
     defaultConfig {
-        manifestPlaceholders = [appName:appName]
-        applicationId appPackageName
+        //practice fork: own app id + name so it installs alongside official Shattered PD
+        manifestPlaceholders = [appName:'SPD Practice']
+        applicationId 'com.petllama.spdpractice'
 
         versionCode appVersionCode
         versionName appVersionName
@@ -18,6 +19,18 @@ android {
         targetSdkVersion appAndroidTargetSDK
         resourceConfigurations += ['en_US', 'cs', 'de', 'el', 'es', 'fr', 'hu', 'in', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'tr', 'uk', 'vi', 'zh_CN']
 
+    }
+
+    signingConfigs {
+        //local release key; set spdKeystore/spdKeystorePassword/spdKeyAlias/spdKeyPassword in ~/.gradle/gradle.properties
+        if (project.hasProperty('spdKeystore')) {
+            practice {
+                storeFile file(project.property('spdKeystore'))
+                storePassword project.property('spdKeystorePassword')
+                keyAlias project.property('spdKeyAlias')
+                keyPassword project.property('spdKeyPassword')
+            }
+        }
     }
 
     buildTypes {
@@ -30,6 +43,7 @@ android {
             }
         }
         release {
+            if (project.hasProperty('spdKeystore')) signingConfig signingConfigs.practice
 
             //These lines enable R8, which is a code shrinker/optimizer/obfuscator.
             //This makes release APKs smaller and more efficient, but also makes debugging trickier
@@ -40,7 +54,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             dependencies {
-                releaseImplementation project(':services:updates:githubUpdates')
+                //practice fork: never prompt to 'update' to official upstream releases
+                releaseImplementation project(':services:updates:debugUpdates')
                 releaseImplementation project(':services:news:shatteredNews')
             }
         }
